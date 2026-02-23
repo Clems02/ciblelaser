@@ -1,0 +1,4 @@
+Mode de jeu:
+1. Classique laser run avec 5 leds. 40 sec pour terminer une fois que la première led est touché.
+2. Décontracté: Même chose que classique mais sans timer cette fois-ci.
+3. RapidFire: A l'allumage de la led RGB, tir !
