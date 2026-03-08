@@ -4,12 +4,12 @@
 #include "mode_classique.h"
 #include "mode_decontracte.h"
 #include "mode_rapidfire.h"
-#include "mode_survie.h"
+#include "mode_infini.h"
 
 int currentMode = 0;
 
 // Tableau de pointeurs de fonctions indexé par le mode
-static void (*modeFunctions[NB_MODES])() = {modeClassique, modeDecontracte, modeRapidfire, modeSurvie};
+static void (*modeFunctions[NB_MODES])() = {modeClassique, modeDecontracte, modeRapidfire, modeInfini};
 
 // Sélection de mode (fenêtre de 3s avec clignotement)
 static bool          enSelectionMode    = false;
@@ -29,7 +29,7 @@ static void resetTousLesModes() {
     classiqueReset();
     decontracteReset();
     rapidfireReset();
-    survieReset();
+    infiniReset();
 }
 
 bool gererSelectionMode() {
@@ -71,4 +71,14 @@ bool gererSelectionMode() {
 
 void executerModeCourant() {
     modeFunctions[currentMode]();
+}
+
+bool modeJeuEnAttente() {
+    switch (currentMode) {
+        case MODE_CLASSIQUE:   return classiqueEnAttente();
+        case MODE_DECONTRACTE: return decontracteEnAttente();
+        case MODE_RAPIDFIRE:   return rapidfireEnAttente();
+        case MODE_INFINI:      return infiniEnAttente();
+        default:               return false;
+    }
 }

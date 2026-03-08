@@ -9,3 +9,6 @@ bool gererSelectionMode();
 
 // Exécute la fonction du mode courant
 void executerModeCourant();
+
+// Retourne true si aucun jeu en cours (en attente du premier tir)
+bool modeJeuEnAttente();

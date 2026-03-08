@@ -1,6 +1,8 @@
 #include <Arduino.h>
 #include <WiFi.h>
+#include <driver/gpio.h>
 #include <esp_bt.h>
+#include <esp_sleep.h>
 
 #include "calibration.h"
 #include "config.h"
@@ -23,11 +25,26 @@ void setup() {
 }
 
 void loop() {
-    if (gererSelectionMode()) {
+        if (gererSelectionMode()) {
         delay(2);
         return;
     }
 
     executerModeCourant();
-    delay(2);
+
+    if (modeJeuEnAttente()) {
+        // Verrouiller les GPIOs pour éviter qu'ils flottent pendant le sleep
+        for (int i = 0; i < LED_PIN_TIR_COUNT; i++) {
+            gpio_hold_en((gpio_num_t) PIN_LED_TIR[i]);
+        }
+        // Aucun jeu en cours : light sleep 50ms pour économiser l'énergie
+        esp_sleep_enable_timer_wakeup(50000);
+        esp_light_sleep_start();
+        // Libérer les GPIOs après réveil pour permettre digitalWrite
+        for (int i = 0; i < LED_PIN_TIR_COUNT; i++) {
+            gpio_hold_dis((gpio_num_t) PIN_LED_TIR[i]);
+        }
+    } else {
+        delay(2);
+    }
 }

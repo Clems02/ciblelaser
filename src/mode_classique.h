@@ -5,3 +5,4 @@ void modeClassique();
 
 // Reset de l'état du mode classique
 void classiqueReset();
+bool classiqueEnAttente();

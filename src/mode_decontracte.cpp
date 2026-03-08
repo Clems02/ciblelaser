@@ -32,6 +32,8 @@ static void animationVictoire() {
     decontracteReset();
 }
 
+bool decontracteEnAttente() { return !gameRunning; }
+
 void modeDecontracte() {
     // Phase d'attente du premier tir
     if (!gameRunning) {

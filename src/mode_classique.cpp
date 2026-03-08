@@ -1,15 +1,16 @@
 #include "mode_classique.h"
+
 #include "config.h"
-#include "leds.h"
 #include "detection.h"
+#include "leds.h"
 
 // Couleurs du timer : vert → jaune → orange → rouge, 10s chacune (40s total)
 const unsigned long CLASSIQUE_PHASE_DURATION                   = 10000;
 const int           CLASSIQUE_NB_PHASES                        = 4;
 const uint8_t       CLASSIQUE_COULEURS[CLASSIQUE_NB_PHASES][3] = {
     {0, 255, 0},    // vert
-    {255, 255, 0},  // jaune
-    {255, 128, 0},  // orange
+    {255, 240, 0},  // jaune vif
+    {255, 80, 0},   // orange foncé
     {255, 0, 0}     // rouge
 };
 
@@ -17,7 +18,7 @@ const uint8_t       CLASSIQUE_COULEURS[CLASSIQUE_NB_PHASES][3] = {
 static bool          gameRunning = false;  // false = attente premier tir, true = chrono lancé
 static int           tirCount    = 0;
 static unsigned long startTime   = 0;
-static int           lastPhase   = -1;     // phase RGB courante (évite setColor à chaque loop)
+static int           lastPhase   = -1;  // phase RGB courante (évite setColor à chaque loop)
 
 void classiqueReset() {
     gameRunning = false;
@@ -29,36 +30,71 @@ void classiqueReset() {
     LOGLN("[CLASSIQUE] En attente du premier tir...");
 }
 
-// Animation victoire : chenillard rapide 3 fois + RGB vert
 static void animationVictoire() {
-    LOGLN("[CLASSIQUE] VICTOIRE !");
-    for (int r = 0; r < 3; r++) {
-        for (int i = 0; i < LED_PIN_TIR_COUNT; i++) {
-            digitalWrite(PIN_LED_TIR[i], HIGH);
-            delay(60);
+    delay(500);
+
+    setColor(0, 0, 0);
+
+    for (int x = 0; x < 3; x++) {
+        for (int i = LED_PIN_TIR_COUNT - 1; i >= 0; i--) {
             digitalWrite(PIN_LED_TIR[i], LOW);
+            delay(75);
+        }
+        for (int j = 0; j < LED_PIN_TIR_COUNT; j++) {
+            digitalWrite(PIN_LED_TIR[j], HIGH);
+            delay(75);
         }
     }
-    for (int i = 0; i < LED_PIN_TIR_COUNT; i++) {
-        digitalWrite(PIN_LED_TIR[i], HIGH);
+
+    delay(300);
+
+    for (int x = 0; x < 3; x++) {
+        for (int i = LED_PIN_TIR_COUNT - 1; i >= 0; i--) {
+            digitalWrite(PIN_LED_TIR[i], LOW);
+        }
+        delay(100);
+        for (int j = 0; j < LED_PIN_TIR_COUNT; j++) {
+            digitalWrite(PIN_LED_TIR[j], HIGH);
+        }
+        delay(100);
     }
-    setColor(0, 255, 0);
+
     delay(2000);
+
     classiqueReset();
 }
 
 // Animation défaite : clignotement rouge 5 fois
 static void animationDefaite() {
-    LOGLN("[CLASSIQUE] DEFAITE - Temps écoulé !");
+    setColor(0, 0, 0);
     eteindre_all_leds_tir();
-    for (int r = 0; r < 5; r++) {
-        setColor(255, 0, 0);
-        delay(150);
-        setColor(0, 0, 0);
-        delay(150);
+
+    delay(250);
+
+    for (int x = 0; x < 10; x++) {
+        for (int x = tirCount; x < LED_PIN_TIR_COUNT; x++) {
+            digitalWrite(PIN_LED_TIR[x], HIGH);
+            setColor(255, 0, 0);
+        }
+        delay(100);
+        for (int x = tirCount; x < LED_PIN_TIR_COUNT; x++) {
+            digitalWrite(PIN_LED_TIR[x], LOW);
+            setColor(0, 0, 0);
+        }
+        delay(100);
     }
-    delay(1000);
+
+    for (int x = tirCount; x < LED_PIN_TIR_COUNT; x++) {
+        digitalWrite(PIN_LED_TIR[x], HIGH);
+        setColor(255, 0, 0);
+    }
+
+    delay(2000);
     classiqueReset();
+}
+
+bool classiqueEnAttente() {
+    return !gameRunning;
 }
 
 void modeClassique() {
@@ -93,6 +129,7 @@ void modeClassique() {
         LOG("[CLASSIQUE] Phase ");
         LOG(phase + 1);
         LOG("/4 - ");
+
         unsigned long restant =
             (CLASSIQUE_NB_PHASES - phase) * CLASSIQUE_PHASE_DURATION - (elapsed % CLASSIQUE_PHASE_DURATION);
         LOG(restant / 1000);

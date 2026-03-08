@@ -78,6 +78,8 @@ static void animationVictoire() {
     rapidfireReset();
 }
 
+bool rapidfireEnAttente() { return etat == RF_ATTENTE_PREMIER_TIR; }
+
 void modeRapidfire() {
     switch (etat) {
         case RF_ATTENTE_PREMIER_TIR:

@@ -9,6 +9,9 @@ static unsigned long lastHitTime = 0;
 bool cibleTouchee() {
     int luminosite = analogRead(PIN_PHOTO_RESISTANCE);
 
+    Serial.print("Luminosite: ");
+    Serial.println(luminosite);
+
     return luminosite > (averageBrightness * THRESHOLD_FACTOR) && luminosite > 200;
 }
 
