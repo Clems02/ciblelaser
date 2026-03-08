@@ -1,7 +1,8 @@
 #include "mode_decontracte.h"
+
 #include "config.h"
-#include "leds.h"
 #include "detection.h"
+#include "leds.h"
 
 // État du mode décontracté
 static bool gameRunning = false;
@@ -17,22 +18,42 @@ void decontracteReset() {
 
 // Animation victoire : chenillard rapide 3 fois
 static void animationVictoire() {
-    LOGLN("[DECONTRACTE] VICTOIRE !");
-    for (int r = 0; r < 3; r++) {
-        for (int i = 0; i < LED_PIN_TIR_COUNT; i++) {
-            digitalWrite(PIN_LED_TIR[i], HIGH);
-            delay(60);
+    delay(500);
+
+    setColor(0, 0, 0);
+
+    for (int x = 0; x < 3; x++) {
+        for (int i = LED_PIN_TIR_COUNT - 1; i >= 0; i--) {
             digitalWrite(PIN_LED_TIR[i], LOW);
+            delay(75);
+        }
+        for (int j = 0; j < LED_PIN_TIR_COUNT; j++) {
+            digitalWrite(PIN_LED_TIR[j], HIGH);
+            delay(75);
         }
     }
-    for (int i = 0; i < LED_PIN_TIR_COUNT; i++) {
-        digitalWrite(PIN_LED_TIR[i], HIGH);
+
+    delay(300);
+
+    for (int x = 0; x < 3; x++) {
+        for (int i = LED_PIN_TIR_COUNT - 1; i >= 0; i--) {
+            digitalWrite(PIN_LED_TIR[i], LOW);
+        }
+        delay(100);
+        for (int j = 0; j < LED_PIN_TIR_COUNT; j++) {
+            digitalWrite(PIN_LED_TIR[j], HIGH);
+        }
+        delay(100);
     }
+
     delay(2000);
+
     decontracteReset();
 }
 
-bool decontracteEnAttente() { return !gameRunning; }
+bool decontracteEnAttente() {
+    return !gameRunning;
+}
 
 void modeDecontracte() {
     // Phase d'attente du premier tir

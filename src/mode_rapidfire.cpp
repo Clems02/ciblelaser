@@ -61,24 +61,42 @@ void rapidfireReset() {
 
 // Animation victoire
 static void animationVictoire() {
-    LOGLN("[RAPIDFIRE] VICTOIRE !");
+    delay(500);
+
     setColor(0, 0, 0);
-    for (int r = 0; r < 3; r++) {
-        for (int i = 0; i < LED_PIN_TIR_COUNT; i++) {
-            digitalWrite(PIN_LED_TIR[i], HIGH);
-            delay(60);
+
+    for (int x = 0; x < 3; x++) {
+        for (int i = LED_PIN_TIR_COUNT - 1; i >= 0; i--) {
             digitalWrite(PIN_LED_TIR[i], LOW);
+            delay(75);
+        }
+        for (int j = 0; j < LED_PIN_TIR_COUNT; j++) {
+            digitalWrite(PIN_LED_TIR[j], HIGH);
+            delay(75);
         }
     }
-    for (int i = 0; i < LED_PIN_TIR_COUNT; i++) {
-        digitalWrite(PIN_LED_TIR[i], HIGH);
+
+    delay(300);
+
+    for (int x = 0; x < 3; x++) {
+        for (int i = LED_PIN_TIR_COUNT - 1; i >= 0; i--) {
+            digitalWrite(PIN_LED_TIR[i], LOW);
+        }
+        delay(100);
+        for (int j = 0; j < LED_PIN_TIR_COUNT; j++) {
+            digitalWrite(PIN_LED_TIR[j], HIGH);
+        }
+        delay(100);
     }
-    setColor(0, 255, 0);
+
     delay(2000);
+
     rapidfireReset();
 }
 
-bool rapidfireEnAttente() { return etat == RF_ATTENTE_PREMIER_TIR; }
+bool rapidfireEnAttente() {
+    return etat == RF_ATTENTE_PREMIER_TIR;
+}
 
 void modeRapidfire() {
     switch (etat) {

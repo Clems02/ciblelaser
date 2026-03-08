@@ -14,17 +14,27 @@ const uint8_t       CLASSIQUE_COULEURS[CLASSIQUE_NB_PHASES][3] = {
     {255, 0, 0}     // rouge
 };
 
+// Paramètres du clignotement de transition
+const unsigned long BLINK_DURATION = 1200;  // durée totale du clignotement (ms)
+const unsigned long BLINK_PERIOD   = 250;   // période d'un clignotement complet (ms)
+
 // État du mode classique
-static bool          gameRunning = false;  // false = attente premier tir, true = chrono lancé
-static int           tirCount    = 0;
-static unsigned long startTime   = 0;
-static int           lastPhase   = -1;  // phase RGB courante (évite setColor à chaque loop)
+static bool          gameRunning     = false;  // false = attente premier tir, true = chrono lancé
+static int           tirCount        = 0;
+static unsigned long startTime       = 0;
+static int           lastPhase       = -1;   // phase courante
+static int           prevPhase       = -1;   // phase précédente (pour le clignotement)
+static unsigned long phaseChangeTime = 0;    // horodatage du dernier changement de phase
+static bool          colorSet        = false;  // couleur de la nouvelle phase déjà appliquée
 
 void classiqueReset() {
-    gameRunning = false;
-    tirCount    = 0;
-    startTime   = 0;
-    lastPhase   = -1;
+    gameRunning     = false;
+    tirCount        = 0;
+    startTime       = 0;
+    lastPhase       = -1;
+    prevPhase       = -1;
+    phaseChangeTime = 0;
+    colorSet        = false;
     eteindre_all_leds_tir();
     setColor(0, 0, 0);
     LOGLN("[CLASSIQUE] En attente du premier tir...");
@@ -122,18 +132,33 @@ void modeClassique() {
         return;
     }
 
-    // Mettre à jour la couleur RGB si on change de phase
+    // Détecter changement de phase
     if (phase != lastPhase) {
-        lastPhase = phase;
-        setColor(CLASSIQUE_COULEURS[phase][0], CLASSIQUE_COULEURS[phase][1], CLASSIQUE_COULEURS[phase][2]);
+        prevPhase       = lastPhase;
+        lastPhase       = phase;
+        phaseChangeTime = millis();
+        colorSet        = false;
+
         LOG("[CLASSIQUE] Phase ");
         LOG(phase + 1);
         LOG("/4 - ");
-
         unsigned long restant =
             (CLASSIQUE_NB_PHASES - phase) * CLASSIQUE_PHASE_DURATION - (elapsed % CLASSIQUE_PHASE_DURATION);
         LOG(restant / 1000);
         LOGLN("s restantes");
+    }
+
+    // Clignotement non-bloquant avec la couleur précédente
+    bool inBlinkWindow = (prevPhase >= 0) && (millis() - phaseChangeTime < BLINK_DURATION);
+    if (inBlinkWindow) {
+        if ((millis() % BLINK_PERIOD) < (BLINK_PERIOD / 2)) {
+            setColor(CLASSIQUE_COULEURS[prevPhase][0], CLASSIQUE_COULEURS[prevPhase][1], CLASSIQUE_COULEURS[prevPhase][2]);
+        } else {
+            setColor(0, 0, 0);
+        }
+    } else if (!colorSet) {
+        setColor(CLASSIQUE_COULEURS[lastPhase][0], CLASSIQUE_COULEURS[lastPhase][1], CLASSIQUE_COULEURS[lastPhase][2]);
+        colorSet = true;
     }
 
     // Détection de tir avec anti-rebond
